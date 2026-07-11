@@ -1,0 +1,46 @@
+# VibeRadar — React Native App
+
+## Dependencies
+- node_modules/
+- .yarn/
+- yarn.lock
+
+## iOS
+ios/Pods/
+ios/build/
+ios/*.xcworkspace
+ios/Podfile.lock
+
+## Android
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+*.apk
+*.aab
+
+## Metro
+.metro-health-check*
+
+## Testing
+coverage/
+
+## IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Environment
+.env
+.env.local
+.env.production
+
+## Misc
+*.log
+npm-debug.log*
+yarn-error.log*

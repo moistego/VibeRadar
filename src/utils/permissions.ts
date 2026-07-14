@@ -9,8 +9,7 @@ export async function requestBluetoothPermissions(): Promise<PermissionStatus> {
     return 'granted';
   }
 
-  // Android 12+ (API 31+): BLUETOOTH_SCAN + BLUETOOTH_CONNECT
-  if (Platform.Version >= 31) {
+  if (Platform.OS === 'android' && Number(Platform.Version) >= 31) {
     try {
       const scanResult = await PermissionsAndroid.request(
         'android.permission.BLUETOOTH_SCAN' as any,
@@ -65,7 +64,7 @@ export async function requestLocationPermission(): Promise<PermissionStatus> {
     return 'granted';
   }
 
-  if (Platform.Version >= 31) {
+  if (Platform.OS === 'android' && Number(Platform.Version) >= 31) {
     // Android 12+ — BLE permissions don't need location, but GPS does
     try {
       const result = await PermissionsAndroid.request(

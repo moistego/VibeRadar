@@ -1,5 +1,4 @@
 import {logger} from '@/utils/logger';
-import {database} from './database';
 
 const TAG = 'PersistenceService';
 

@@ -8,8 +8,8 @@ const TAG = 'LocationSyncService';
 
 // TODO: move these to env config (react-native-config or similar) rather
 // than hardcoding — placeholders shown for clarity.
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://gnnurzhtszroudpnxnbo.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'sb_publishable_xbb0gMncTy3Goeyfk5WrfQ_5S7K4kuy';
 
 // Foreground vs background push/pull cadence. Mirrors the pattern already
 // used for BLE scan intervals in BLE constants — same idea, applied to GPS.

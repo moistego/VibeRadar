@@ -1,7 +1,4 @@
-import {logger} from '@/utils/logger';
 import {KALMAN, DISTANCE, CONFIDENCE} from '@/utils/constants';
-
-const TAG = 'SensorFusionEngine';
 
 // Once GPS puts a peer within this range, rotation-sweep is used only to
 // refine the arrow, never as the sole source of truth. Outside this range,
@@ -310,10 +307,10 @@ class SensorFusionEngineClass {
      * Stronger signals = higher confidence.
      */
   private rssiConfidence(filteredRSSI: number): number {
-        if (filteredRSSI >= -60) return 1.0; // Excellent
-      if (filteredRSSI >= -75) return 0.8; // Good
-      if (filteredRSSI >= -85) return 0.5; // Fair
-      if (filteredRSSI >= -95) return 0.3; // Weak
+        if (filteredRSSI >= -60) { return 1.0; } // Excellent
+            if (filteredRSSI >= -75) { return 0.8; } // Good
+            if (filteredRSSI >= -85) { return 0.5; } // Fair
+            if (filteredRSSI >= -95) { return 0.3; } // Weak
       return 0.1; // Very weak
   }
 

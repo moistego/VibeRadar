@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, FlatList, StyleSheet} from 'react-native';
 import {useAppSelector} from '@/state/store';
 import {selectActivePeers} from '@/state/selectors/peerSelectors';
 import {selectActiveGroup} from '@/state/selectors/groupSelectors';

@@ -1,5 +1,4 @@
 import {logger} from '@/utils/logger';
-import {SENSORS} from '@/utils/constants';
 
 const TAG = 'SensorService';
 

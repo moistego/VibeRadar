@@ -38,7 +38,7 @@ class PersistenceServiceClass {
     logger.info(TAG, 'Member lastSeen updated', {groupId, userId});
   }
 
-  async getGroup(groupId: string) {
+  async getGroup(_groupId: string) {
     // return database.get('groups').find(groupId);
     return null;
   }
@@ -48,7 +48,7 @@ class PersistenceServiceClass {
     return [];
   }
 
-  async getGroupMembers(groupId: string) {
+  async getGroupMembers(_groupId: string) {
     // return database.get('group_members').query(
     //   Q.where('group_id', groupId)
     // ).fetch();

@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, TextInput, Switch, Alert} from 'react-native';
 import {useAppSelector, useAppDispatch} from '@/state/store';
 import {selectHasActiveGroup, selectActiveGroup} from '@/state/selectors/groupSelectors';
-import {setOnboarded, resetUser} from '@/state/slices/userSlice';
+import {resetUser} from '@/state/slices/userSlice';
 import {colors, typography, spacing} from '@/presentation/theme';
 import {requestBluetoothPermissions, requestLocationPermission} from '@/utils/permissions';
 

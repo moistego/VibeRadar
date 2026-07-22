@@ -1,6 +1,5 @@
-import {BleManager, Device, State, LogLevel} from 'react-native-ble-plx';
+import {BleManager, Device, State} from 'react-native-ble-plx';
 import {logger} from '@/utils/logger';
-import {BLE} from '@/utils/constants';
 
 const TAG = 'BleService';
 

@@ -1,11 +1,12 @@
-import React, {useEffect, useCallback, useRef} from 'react';
+import React, {useEffect, useCallback, useRef, useState} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useAppSelector, useAppDispatch} from '@/state/store';
-import {selectHasPeers, selectPeersCount} from '@/state/selectors/peerSelectors';
+import {selectHasPeers, selectPeersCount, selectActivePeers} from '@/state/selectors/peerSelectors';
 import {selectHasActiveGroup, selectActiveGroup} from '@/state/selectors/groupSelectors';
 import {upsertPeer, clearPeers} from '@/state/slices/peersSlice';
 import {colors, typography, spacing} from '@/presentation/theme';
+import {RadarCompass} from '@/presentation/components/radar/RadarCompass';
 import {SensorService} from '@/services/sensors';
 import {AuthService} from '@/services/auth/AuthService';
 import {LocationSyncService, PeerLocation} from '@/services/location/LocationSyncService';
@@ -20,9 +21,11 @@ export const RadarScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const hasPeers = useAppSelector(selectHasPeers);
   const peerCount = useAppSelector(selectPeersCount);
+  const activePeers = useAppSelector(selectActivePeers);
   const hasActiveGroup = useAppSelector(selectHasActiveGroup);
   const activeGroup = useAppSelector(selectActiveGroup);
   const currentHeadingRef = useRef<number>(0);
+  const [heading, setHeading] = useState<number>(0);
 
   const handlePeerLocations = useCallback(
     (peers: PeerLocation[]) => {
@@ -41,56 +44,54 @@ export const RadarScreen: React.FC = () => {
           myLongitude: myPosition ? myPosition.longitude : undefined,
           timestamp: Date.now(),
         });
-
-                    dispatch(
-                      upsertPeer({
-                        userId: peer.userId,
-                        lastRSSI: 0,
-                        lastHeading: currentHeadingRef.current,
-                        bearing: result.bearing,
-                        distance: result.distance,
-                        confidence: result.confidence,
-                        lastSeen: peer.updatedAt,
-                        latitude: peer.latitude,
-                        longitude: peer.longitude,
-                        isConnected: true,
-                      }),
-                      );
+        dispatch(
+          upsertPeer({
+            userId: peer.userId,
+            lastRSSI: 0,
+            lastHeading: currentHeadingRef.current,
+            bearing: result.bearing,
+            distance: result.distance,
+            confidence: result.confidence,
+            lastSeen: peer.updatedAt,
+            latitude: peer.latitude,
+            longitude: peer.longitude,
+            isConnected: true,
+          }),
+        );
       });
     },
     [dispatch],
-    );
+  );
 
   useEffect(() => {
     logger.info(TAG, 'Radar screen mounted');
+    SensorService.subscribeHeading(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, data => {
+      currentHeadingRef.current = data.heading;
+      setHeading(data.heading);
+    });
+    SensorService.subscribeMotion(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, () => {
+      // Reserved for future battery-saving logic. Not driving behavior yet.
+    });
 
-            SensorService.subscribeHeading(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, data => {
-              currentHeadingRef.current = data.heading;
-            });
-
-            SensorService.subscribeMotion(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, () => {
-              // Reserved for future battery-saving logic. Not driving behavior yet.
-            });
-
-            const userId = AuthService.getUserId();
+    const userId = AuthService.getUserId();
     if (hasActiveGroup && activeGroup && userId) {
       LocationSyncService.startSync(activeGroup.id, userId, handlePeerLocations);
     } else {
       logger.warn(TAG, 'No active group or user - location sync not started');
     }
 
-            return () => {
-              SensorService.unsubscribeAll();
-              LocationSyncService.stopSync();
-              SensorFusionEngine.resetAll();
-            };
+    return () => {
+      SensorService.unsubscribeAll();
+      LocationSyncService.stopSync();
+      SensorFusionEngine.resetAll();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasActiveGroup, activeGroup ? activeGroup.id : null]);
 
   useEffect(() => {
     SensorService.updateHeadingInterval(
       hasPeers ? SENSORS.HEADING_UPDATE_RATE_FAST_MS : SENSORS.HEADING_UPDATE_RATE_SLOW_MS,
-      );
+    );
   }, [hasPeers]);
 
   const handleRefresh = useCallback(() => {
@@ -100,17 +101,22 @@ export const RadarScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.radarContainer}>
-        <View style={styles.radarCircle}>
-          <Text style={styles.radarCenterText}>
-            {hasPeers ? String(peerCount) : '\u2014'}
-          </Text>
-          <Text style={styles.radarLabel}>
-            {hasPeers ? 'friends nearby' : 'no friends yet'}
-          </Text>
-          <View style={styles.compassRose}>
-            <Text style={styles.compassText}>N</Text>
+        <RadarCompass
+          size={280}
+          heading={heading}
+          friends={activePeers.map(peer => ({
+            userId: peer.userId,
+            bearing: peer.bearing,
+            distance: peer.distance,
+            confidence: peer.confidence,
+            displayName: peer.displayName,
+          }))}
+        />
+        {!hasPeers && (
+          <View style={styles.emptyStateOverlay} pointerEvents="none">
+            <Text style={styles.radarLabel}>no friends yet</Text>
           </View>
-        </View>
+        )}
       </View>
 
       <View style={styles.statusBar}>
@@ -157,7 +163,7 @@ export const RadarScreen: React.FC = () => {
         </Text>
       </View>
     </View>
-    );
+  );
 };
 
 const styles = StyleSheet.create({
@@ -170,37 +176,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  radarCircle: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    justifyContent: 'center',
+  emptyStateOverlay: {
+    position: 'absolute',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    position: 'relative',
-  },
-  radarCenterText: {
-    ...typography.h1,
-    color: colors.primary,
-    fontSize: 48,
+    justifyContent: 'center',
   },
   radarLabel: {
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: spacing.xs,
-  },
-  compassRose: {
-    position: 'absolute',
-    top: -spacing.lg,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  compassText: {
-    ...typography.label,
-    color: colors.accent,
   },
   statusBar: {
     flexDirection: 'row',

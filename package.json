@@ -13,6 +13,7 @@
     "pod-install": "cd ios && pod install"
   },
   "dependencies": {
+    "rxjs": "^7.8.1",
     "react": "18.3.1",
     "react-native": "0.76.6",
     "@react-navigation/native": "^7.0.0",

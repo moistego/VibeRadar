@@ -144,8 +144,8 @@ export const PairingScreen: React.FC = () => {
                                                                                         activeTab === 'join' && styles.activeTabText,
                                                                                       ]}>
                                                                       Join Squad
-                                                      </Text>Text>
-                                        </TouchableOpacity>TouchableOpacity>
+                                                      </Text>
+                                        </TouchableOpacity>
                                         <TouchableOpacity
                                                       style={[styles.tab, activeTab === 'create' && styles.activeTab]}
                                                       onPress={() => {
@@ -158,25 +158,25 @@ export const PairingScreen: React.FC = () => {
                                                                                         activeTab === 'create' && styles.activeTabText,
                                                                                       ]}>
                                                                       Create Squad
-                                                      </Text>Text>
-                                        </TouchableOpacity>TouchableOpacity>
-                            </View>View>
+                                                      </Text>
+                                        </TouchableOpacity>
+                            </View>
 
                     {activeTab === 'join' && (
                               <View style={styles.tabContent}>
                                             <View style={styles.qrContainer}>
                                                             <View style={styles.qrFrame}>
-                                                                              <Text style={styles.qrPlaceholderText}>📷</Text>Text>
-                                                                              <Text style={styles.qrLabel}>Scan QR code</Text>Text>
+                                                                              <Text style={styles.qrPlaceholderText}>📷</Text>
+                                                                              <Text style={styles.qrLabel}>Scan QR code</Text>
                                                                               <View style={styles.scanBar} />
-                                                            </View>View>
-                                            </View>View>
+                                                            </View>
+                                            </View>
 
                                             <View style={styles.dividerRow}>
                                                             <View style={styles.divider} />
-                                                            <Text style={styles.dividerText}>or enter code</Text>Text>
+                                                            <Text style={styles.dividerText}>or enter code</Text>
                                                             <View style={styles.divider} />
-                                            </View>View>
+                                            </View>
 
                                             <View style={styles.codeInputContainer}>
                                                             <TextInput
@@ -189,7 +189,7 @@ export const PairingScreen: React.FC = () => {
                                                                               maxLength={6}
                                                                               textAlign="center"
                                                                             />
-                                            </View>View>
+                                            </View>
 
                                             <View style={styles.nameInputContainer}>
                                                             <TextInput
@@ -200,7 +200,7 @@ export const PairingScreen: React.FC = () => {
                                                                               placeholderTextColor={colors.textMuted}
                                                                               maxLength={20}
                                                                             />
-                                            </View>View>
+                                            </View>
 
                                             <TouchableOpacity
                                                             style={[
@@ -211,45 +211,45 @@ export const PairingScreen: React.FC = () => {
                                                             disabled={!squadCode.trim() || !displayName.trim() || isJoining}>
                                                             <Text style={styles.primaryButtonText}>
                                                               {isJoining ? 'Joining...' : 'Join Squad'}
-                                                            </Text>Text>
-                                            </TouchableOpacity>TouchableOpacity>
-                              </View>View>
+                                                            </Text>
+                                            </TouchableOpacity>
+                              </View>
                             )}
 
                     {activeTab === 'create' && (
                               <View style={styles.tabContent}>
                                 {isCreating && !generatedCode && (
                                               <View style={styles.codeDisplayContainer}>
-                                                                <Text style={styles.codeLabel}>Creating your squad…</Text>Text>
-                                              </View>View>
+                                                                <Text style={styles.codeLabel}>Creating your squad…</Text>
+                                              </View>
                                             )}
 
                                 {generatedCode && (
                                               <>
                                                               <View style={styles.codeDisplayContainer}>
-                                                                                <Text style={styles.codeLabel}>Your Squad Code</Text>Text>
-                                                                                <Text style={styles.codeDisplay}>{generatedCode}</Text>Text>
+                                                                                <Text style={styles.codeLabel}>Your Squad Code</Text>
+                                                                                <Text style={styles.codeDisplay}>{generatedCode}</Text>
                                                                                 <View style={styles.qrPlaceholder}>
-                                                                                                    <Text style={styles.qrPlaceholderIcon}>⬦</Text>Text>
+                                                                                                    <Text style={styles.qrPlaceholderIcon}>⬦</Text>
                                                                                                     <Text style={styles.qrPlaceholderSmall}>
                                                                                                                           QR code ready — share with friends
-                                                                                                      </Text>Text>
-                                                                                </View>View>
-                                                              </View>View>
+                                                                                                      </Text>
+                                                                                </View>
+                                                              </View>
                                               
                                                               <TouchableOpacity style={styles.shareButton} onPress={handleShareCode}>
-                                                                                <Text style={styles.shareButtonText}>Share Code</Text>Text>
-                                                              </TouchableOpacity>TouchableOpacity>
+                                                                                <Text style={styles.shareButtonText}>Share Code</Text>
+                                                              </TouchableOpacity>
                                               
                                                               <TouchableOpacity style={styles.primaryButton} onPress={handleCreateDone}>
-                                                                                <Text style={styles.primaryButtonText}>Start Vibing 🎵</Text>Text>
-                                                              </TouchableOpacity>TouchableOpacity>
-                                              </>>
+                                                                                <Text style={styles.primaryButtonText}>Start Vibing 🎵</Text>
+                                                              </TouchableOpacity>
+                                              </>
                                             )}
-                              </View>View>
+                              </View>
                           )}
-                  </View>View>
-          </KeyboardAvoidingView>KeyboardAvoidingView>
+                  </View>
+          </KeyboardAvoidingView>
         );
 };
 

@@ -195,4 +195,3 @@ class GroupServiceClass {
 }
 export const GroupService = new GroupServiceClass();
 export const GroupService = new GroupServiceClass();
-export const GroupService = new GroupServiceClass();

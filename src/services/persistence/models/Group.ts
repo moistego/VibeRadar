@@ -1,5 +1,5 @@
 import {Model} from '@nozbe/watermelondb';
-import {field, date, readonly, relation} from '@nozbe/watermelondb/decorators';
+import {field} from '@nozbe/watermelondb/decorators';
 
 export class GroupModel extends Model {
   static table = 'groups';

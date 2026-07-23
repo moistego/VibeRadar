@@ -112,7 +112,6 @@ class BleScannerClass {
       offset += 4;
       const txPower = view.getInt8(offset);
       offset += 1;
-      const seqNum = view.getUint16(offset, false);
       offset += 2;
       const hasGps = view.getUint8(offset) === 1;
       offset += 1;

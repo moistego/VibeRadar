@@ -32,7 +32,6 @@ jobs:
           key: node_modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             node_modules-${{ runner.os }}-
-
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm install --legacy-peer-deps
@@ -42,7 +41,7 @@ jobs:
 
       - name: Lint
         run: npx eslint . --ext .ts,.tsx --max-warnings 0
-        continue-on-error: true  # Non-blocking while lint config matures
+        continue-on-error: true # Non-blocking while lint config matures
 
       - name: Run tests
         run: npm test

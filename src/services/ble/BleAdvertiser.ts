@@ -24,7 +24,7 @@ class BleAdvertiserClass {
     return this.isAdvertising;
   }
 
-  async startAdvertising(payload: Omit<AdvertisementPayload, 'seqNum'>): Promise<boolean> {
+  async startAdvertising(_payload: Omit<AdvertisementPayload, 'seqNum'>): Promise<boolean> {
     try {
       if (this.isAdvertising) {
         logger.warn(TAG, 'Already advertising — stopping first');

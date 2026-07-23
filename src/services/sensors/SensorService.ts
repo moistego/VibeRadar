@@ -27,7 +27,7 @@ class SensorServiceClass {
     private headingCallback: HeadingCallback | null = null;
     private motionCallback: MotionCallback | null = null;
     private compassStarted = false;
-    private headingThrottleMs = SENSORS.HEADING_UPDATE_RATE_SLOW_MS;
+    private headingThrottleMs: number = SENSORS.HEADING_UPDATE_RATE_SLOW_MS;
     private lastHeadingEmitAt = 0;
     private motionSubscription: Subscription | null = null;
 

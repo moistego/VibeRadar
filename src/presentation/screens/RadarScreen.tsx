@@ -1,11 +1,15 @@
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useRef} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useAppSelector, useAppDispatch} from '@/state/store';
 import {selectHasPeers, selectPeersCount} from '@/state/selectors/peerSelectors';
 import {selectHasActiveGroup, selectActiveGroup} from '@/state/selectors/groupSelectors';
+import {upsertPeer, clearPeers} from '@/state/slices/peersSlice';
 import {colors, typography, spacing} from '@/presentation/theme';
 import {SensorService} from '@/services/sensors';
+import {AuthService} from '@/services/auth/AuthService';
+import {LocationSyncService, PeerLocation} from '@/services/location/LocationSyncService';
+import {SensorFusionEngine} from '@/engine/SensorFusionEngine';
 import {logger} from '@/utils/logger';
 import {SENSORS} from '@/utils/constants';
 
@@ -18,56 +22,102 @@ export const RadarScreen: React.FC = () => {
   const peerCount = useAppSelector(selectPeersCount);
   const hasActiveGroup = useAppSelector(selectHasActiveGroup);
   const activeGroup = useAppSelector(selectActiveGroup);
+  const currentHeadingRef = useRef<number>(0);
+
+  const handlePeerLocations = useCallback(
+    (peers: PeerLocation[]) => {
+      const myPosition = LocationSyncService.getLatestPosition();
+      dispatch(clearPeers());
+      peers.forEach(peer => {
+        const result = SensorFusionEngine.processPeerDetection({
+          peerId: peer.userId,
+          rssi: 0,
+          txPower: 0,
+          hasRealRSSI: false,
+          userHeading: currentHeadingRef.current,
+          peerLatitude: peer.latitude,
+          peerLongitude: peer.longitude,
+          myLatitude: myPosition ? myPosition.latitude : undefined,
+          myLongitude: myPosition ? myPosition.longitude : undefined,
+          timestamp: Date.now(),
+        });
+
+                    dispatch(
+                      upsertPeer({
+                        userId: peer.userId,
+                        lastRSSI: 0,
+                        lastHeading: currentHeadingRef.current,
+                        bearing: result.bearing,
+                        distance: result.distance,
+                        confidence: result.confidence,
+                        lastSeen: peer.updatedAt,
+                        latitude: peer.latitude,
+                        longitude: peer.longitude,
+                        isConnected: true,
+                      }),
+                      );
+      });
+    },
+    [dispatch],
+    );
 
   useEffect(() => {
     logger.info(TAG, 'Radar screen mounted');
 
-    // Start sensor subscriptions
-    SensorService.subscribeHeading(SENSORS.HEADING_UPDATE_RATE_FAST_MS, data => {
-      // Update heading in Redux store
-      logger.debug(TAG, `Heading: ${data.heading}° (accuracy: ${data.accuracy}°)`);
-    });
+            SensorService.subscribeHeading(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, data => {
+              currentHeadingRef.current = data.heading;
+            });
 
-    SensorService.subscribeMotion(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, data => {
-      logger.debug(TAG, `Moving: ${data.isMoving}, accel: ${data.acceleration.toFixed(2)} m/s²`);
-    });
+            SensorService.subscribeMotion(SENSORS.HEADING_UPDATE_RATE_SLOW_MS, () => {
+              // Reserved for future battery-saving logic. Not driving behavior yet.
+            });
 
-    return () => {
-      SensorService.unsubscribeAll();
-    };
-  }, [dispatch]);
+            const userId = AuthService.getUserId();
+    if (hasActiveGroup && activeGroup && userId) {
+      LocationSyncService.startSync(activeGroup.id, userId, handlePeerLocations);
+    } else {
+      logger.warn(TAG, 'No active group or user - location sync not started');
+    }
+
+            return () => {
+              SensorService.unsubscribeAll();
+              LocationSyncService.stopSync();
+              SensorFusionEngine.resetAll();
+            };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasActiveGroup, activeGroup ? activeGroup.id : null]);
+
+  useEffect(() => {
+    SensorService.updateHeadingInterval(
+      hasPeers ? SENSORS.HEADING_UPDATE_RATE_FAST_MS : SENSORS.HEADING_UPDATE_RATE_SLOW_MS,
+      );
+  }, [hasPeers]);
 
   const handleRefresh = useCallback(() => {
-    // Force a scan refresh
-    logger.info(TAG, 'Manual refresh triggered');
+    logger.info(TAG, 'Manual refresh triggered (no-op - realtime already active)');
   }, []);
 
   return (
     <View style={styles.container}>
-      {/* Radar Display Area */}
       <View style={styles.radarContainer}>
-        {/* Placeholder for SVG Radar Compass component */}
         <View style={styles.radarCircle}>
           <Text style={styles.radarCenterText}>
-            {hasPeers ? `${peerCount}` : '—'}
+            {hasPeers ? String(peerCount) : '\u2014'}
           </Text>
           <Text style={styles.radarLabel}>
             {hasPeers ? 'friends nearby' : 'no friends yet'}
           </Text>
-
-          {/* Compass rose placeholder */}
           <View style={styles.compassRose}>
             <Text style={styles.compassText}>N</Text>
           </View>
         </View>
       </View>
 
-      {/* Status Bar */}
       <View style={styles.statusBar}>
         <View style={styles.statusItem}>
           <Text style={styles.statusLabel}>Group</Text>
           <Text style={styles.statusValue}>
-            {hasActiveGroup ? activeGroup?.name ?? 'Active' : 'None'}
+            {hasActiveGroup ? (activeGroup && activeGroup.name ? activeGroup.name : 'Active') : 'None'}
           </Text>
         </View>
         <View style={styles.statusItem}>
@@ -80,7 +130,6 @@ export const RadarScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Action Buttons */}
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.actionButton}
@@ -90,7 +139,7 @@ export const RadarScreen: React.FC = () => {
         <TouchableOpacity
           style={[styles.actionButton, styles.refreshButton]}
           onPress={handleRefresh}>
-          <Text style={styles.actionButtonText}>↻</Text>
+          <Text style={styles.actionButtonText}>{'\u21BB'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.actionButton}
@@ -99,7 +148,6 @@ export const RadarScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Hello Radar Header */}
       <View style={styles.helloContainer}>
         <Text style={styles.helloTitle}>Hello Radar</Text>
         <Text style={styles.helloSubtitle}>
@@ -109,7 +157,7 @@ export const RadarScreen: React.FC = () => {
         </Text>
       </View>
     </View>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
